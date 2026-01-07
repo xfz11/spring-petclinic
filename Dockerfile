@@ -4,15 +4,12 @@
 FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
-# Copy pom.xml and download dependencies (cached layer)
+# Copy source and pom
 COPY pom.xml .
-COPY .mvn .mvn
-COPY mvnw .
-RUN ./mvnw dependency:go-offline -B
-
-# Copy source code and build
 COPY src ./src
-RUN ./mvnw package -DskipTests
+
+# Build the application
+RUN mvn package -DskipTests -B
 
 # Stage 2: Create the runtime image
 FROM eclipse-temurin:17-jre-jammy

@@ -99,28 +99,28 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
           }
         ]
       }
-      registries: empty(containerRegistryServer) ? [
-        {
-          server: containerRegistry.properties.loginServer
-          username: containerRegistry.listCredentials().username
-          passwordSecretRef: 'registry-password'
-        }
-      ] : [
+      registries: !empty(containerRegistryServer) ? [
         {
           server: containerRegistryServer
           username: containerRegistryUsername
           passwordSecretRef: 'registry-password'
         }
+      ] : [
+        {
+          server: containerRegistry.properties.loginServer
+          username: containerRegistry.listCredentials().username
+          passwordSecretRef: 'registry-password'
+        }
       ]
-      secrets: empty(containerRegistryServer) ? [
+      secrets: !empty(containerRegistryServer) ? [
         {
           name: 'registry-password'
-          value: containerRegistry.listCredentials().passwords[0].value
+          value: containerRegistryPassword
         }
       ] : [
         {
           name: 'registry-password'
-          value: containerRegistryPassword
+          value: containerRegistry.listCredentials().passwords[0].value
         }
       ]
     }
@@ -188,6 +188,6 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
 // Outputs
 output containerAppUrl string = 'https://${containerApp.properties.configuration.ingress.fqdn}'
 output containerAppName string = containerApp.name
-output containerRegistryLoginServer string = empty(containerRegistryServer) ? containerRegistry.properties.loginServer : containerRegistryServer
-output containerRegistryName string = empty(containerRegistryServer) ? containerRegistry.name : ''
+output containerRegistryLoginServer string = !empty(containerRegistryServer) ? containerRegistryServer : containerRegistry.properties.loginServer
+output containerRegistryName string = !empty(containerRegistryServer) ? '' : containerRegistry.name
 output resourceGroupName string = resourceGroup().name
