@@ -1,0 +1,67 @@
+name: Get PostgreSQL Region and SKU Recommendations
+
+on:
+  workflow_dispatch:
+    inputs:
+      preferred_regions:
+        description: 'Comma-separated list of preferred regions (optional)'
+        required: false
+        default: ''
+
+jobs:
+  get-recommendations:
+    runs-on: ubuntu-latest
+    environment: dev
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Display configuration
+        run: |
+          echo "Getting PostgreSQL recommendations..."
+          echo "Subscription ID: ${{ secrets.AZURE_SUBSCRIPTION_ID || 'Not configured' }}"
+          echo "Workspace: ${{ github.workspace }}"
+          if [ -n "${{ inputs.preferred_regions }}" ]; then
+            echo "Preferred regions: ${{ inputs.preferred_regions }}"
+          fi
+      
+      - name: Run recommendation script
+        run: |
+          python infra/get_postgres_recommendations.py
+        env:
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      
+      - name: Display recommendation summary
+        run: |
+          echo "=========================================="
+          echo "PostgreSQL Deployment Recommendations"
+          echo "=========================================="
+          echo ""
+          echo "The appmod-get-available-region-sku tool helps you:"
+          echo "  1. Find available Azure regions for PostgreSQL"
+          echo "  2. Identify supported SKUs in each region"
+          echo "  3. Check quota availability"
+          echo ""
+          echo "Tool Parameters:"
+          echo "  Resource Type: Microsoft.DBforPostgreSQL/flexibleServers"
+          echo "  Quota: 1 instance"
+          echo ""
+          echo "Next Steps:"
+          echo "  1. Review the recommendations above"
+          echo "  2. Choose a region based on your requirements"
+          echo "  3. Select an appropriate SKU for your workload"
+          echo "  4. Use the region and SKU in your infrastructure deployment"
+          echo ""
+          echo "For Spring PetClinic:"
+          echo "  - Dev/Test: Use B1ms or B2s SKU"
+          echo "  - Production: Use D2ds_v4 or D4ds_v4 SKU"
+          echo "=========================================="
