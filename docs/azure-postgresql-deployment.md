@@ -172,7 +172,8 @@ spring.datasource.url=jdbc:postgresql://<server-name>.postgres.database.azure.co
 spring.datasource.username=petclinic
 spring.datasource.password=${POSTGRES_PASS}
 
-# Azure PostgreSQL recommended settings
+# Azure PostgreSQL recommended settings for development
+# For production, see Performance Optimization section below
 spring.datasource.hikari.maximum-pool-size=10
 spring.datasource.hikari.minimum-idle=5
 spring.datasource.hikari.connection-timeout=20000
@@ -218,15 +219,23 @@ az postgres flexible-server firewall-rule create \
 ## Performance Optimization
 
 ### Connection Pooling
-Spring Boot uses HikariCP by default. Recommended settings:
+Spring Boot uses HikariCP by default. Recommended settings for production:
 
 ```properties
+# Production connection pool settings
+# Adjust maximum-pool-size based on your SKU's max_connections
+# Rule of thumb: max_connections / number_of_app_instances
 spring.datasource.hikari.maximum-pool-size=20
 spring.datasource.hikari.minimum-idle=10
 spring.datasource.hikari.idle-timeout=300000
 spring.datasource.hikari.max-lifetime=1200000
 spring.datasource.hikari.connection-timeout=30000
 ```
+
+**Pool sizing guide**:
+- B1ms (max 50 connections): 10-15 per app instance
+- D2ds_v4 (max 97 connections): 20-30 per app instance
+- D4ds_v4 (max 197 connections): 40-50 per app instance
 
 ### Database Parameters
 
@@ -276,8 +285,10 @@ If migrating from local PostgreSQL to Azure:
 # Export local database
 pg_dump -h localhost -U petclinic petclinic > petclinic_backup.sql
 
-# Import to Azure
-psql "host=<server-name>.postgres.database.azure.com port=5432 dbname=petclinic user=petclinic password=<password> sslmode=require" < petclinic_backup.sql
+# Import to Azure - Set password as environment variable for security
+export PGPASSWORD='<password>'
+psql "host=<server-name>.postgres.database.azure.com port=5432 dbname=petclinic user=petclinic sslmode=require" < petclinic_backup.sql
+unset PGPASSWORD
 ```
 
 ## Quick Start Recommendation

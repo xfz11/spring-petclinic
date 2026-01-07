@@ -113,7 +113,15 @@ az postgres flexible-server firewall-rule create \
 
 ### Connect with psql
 ```bash
-psql "host=<server-name>.postgres.database.azure.com port=5432 dbname=petclinic user=petclinic password=<password> sslmode=require"
+# Use PGPASSWORD environment variable to avoid exposing password
+export PGPASSWORD='<password>'
+psql "host=<server-name>.postgres.database.azure.com port=5432 dbname=petclinic user=petclinic sslmode=require"
+unset PGPASSWORD
+
+# Or use .pgpass file for persistent credentials
+echo "<server-name>.postgres.database.azure.com:5432:petclinic:petclinic:<password>" >> ~/.pgpass
+chmod 600 ~/.pgpass
+psql "host=<server-name>.postgres.database.azure.com port=5432 dbname=petclinic user=petclinic sslmode=require"
 ```
 
 ### Get Connection String
