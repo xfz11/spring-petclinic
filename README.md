@@ -87,6 +87,22 @@ or
 docker compose up postgres
 ```
 
+## Deploying to Azure with PostgreSQL
+
+If you're planning to deploy this application to Azure with Azure Database for PostgreSQL, we provide region and SKU recommendations to help you choose the best configuration:
+
+```bash
+./scripts/azure-postgresql-recommend.sh
+```
+
+For detailed information about Azure PostgreSQL deployment options, including:
+- Recommended regions with available quota
+- SKU options (Burstable, General Purpose, Memory Optimized)
+- Cost estimates and optimization tips
+- Sample deployment commands
+
+See the [Azure PostgreSQL Recommendations](docs/AZURE_POSTGRESQL_RECOMMENDATIONS.md) documentation.
+
 ## Test Applications
 
 At development time we recommend you use the test applications set up as `main()` methods in `PetClinicIntegrationTests` (using the default H2 database and also adding Spring Boot Devtools), `MySqlTestApplication` and `PostgresIntegrationTests`. These are set up so that you can run the apps in your IDE to get fast feedback and also run the same classes as integration tests against the respective database. The MySql integration tests use Testcontainers to start the database in a Docker container, and the Postgres tests use Docker Compose to do the same thing.

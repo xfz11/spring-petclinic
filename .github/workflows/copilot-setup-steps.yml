@@ -34,3 +34,8 @@ jobs:
         run: |
           az account set --subscription a4ab3025-1b32-4394-92e0-d07c1ebf3787
           az account show
+      
+      - name: Get Azure PostgreSQL Region and SKU Recommendations
+        run: |
+          chmod +x ./scripts/azure-postgresql-recommend.sh
+          ./scripts/azure-postgresql-recommend.sh
