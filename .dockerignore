@@ -1,0 +1,51 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# CI/CD
+.github
+.devcontainer
+
+# Documentation
+*.md
+LICENSE.txt
+
+# IDE
+.vscode
+.idea
+*.iml
+*.iws
+*.ipr
+.settings
+.classpath
+.project
+
+# Build output
+target/
+build/
+.gradle/
+
+# Logs
+*.log
+
+# Test
+test-results/
+coverage/
+
+# Kubernetes
+k8s/
+
+# Infrastructure
+infra/
+
+# Docker
+docker-compose.yml
+Dockerfile
+
+# Other
+.gitpod.yml
+*.swp
+*.swo
+*~
+.DS_Store
