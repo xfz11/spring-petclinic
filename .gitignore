@@ -46,3 +46,7 @@ out/
 _site/
 *.css
 !petclinic.css
+
+### Azure/Infrastructure ###
+infra/*.json
+!infra/package*.json

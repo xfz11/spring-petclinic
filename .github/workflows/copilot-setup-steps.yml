@@ -34,3 +34,33 @@ jobs:
         run: |
           az account set --subscription a4ab3025-1b32-4394-92e0-d07c1ebf3787
           az account show
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Get PostgreSQL Region and SKU Recommendations
+        run: |
+          echo "=========================================="
+          echo "Getting PostgreSQL recommendations..."
+          echo "=========================================="
+          python infra/get_postgres_recommendations.py
+        env:
+          AZURE_SUBSCRIPTION_ID: a4ab3025-1b32-4394-92e0-d07c1ebf3787
+      
+      - name: Display Deployment Instructions
+        run: |
+          echo "=========================================="
+          echo "Next Steps for PostgreSQL Deployment"
+          echo "=========================================="
+          echo ""
+          echo "The appmod-get-available-region-sku tool has been demonstrated above."
+          echo ""
+          echo "To deploy PostgreSQL with the recommended region and SKU:"
+          echo "  1. Review the recommendations in the logs above"
+          echo "  2. Run: az deployment group create --resource-group <rg-name> --template-file infra/postgres.bicep"
+          echo "  3. Specify parameters: location, skuName, skuTier, administratorPassword"
+          echo ""
+          echo "For more details, see: infra/DEPLOYMENT_GUIDE.md"
+          echo "=========================================="
