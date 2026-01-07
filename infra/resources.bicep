@@ -130,6 +130,8 @@ resource webApp 'Microsoft.App/containerApps@2023-05-01' = {
       containers: [
         {
           name: 'web'
+          // Placeholder image required by Azure Container Apps IaC rules
+          // This will be replaced by azd during deployment with the actual Spring PetClinic image
           image: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
           resources: {
             cpu: json('0.5')
