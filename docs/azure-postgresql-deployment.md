@@ -71,8 +71,15 @@ az postgres flexible-server create \
   --storage-size 32 \
   --version 16 \
   --admin-user petclinic \
-  --admin-password <your-secure-password> \
-  --public-access 0.0.0.0
+  --admin-password <your-secure-password>
+
+# Configure firewall to allow your IP after creation
+az postgres flexible-server firewall-rule create \
+  --resource-group petclinic-rg \
+  --name petclinic-dev-postgres \
+  --rule-name AllowMyIP \
+  --start-ip-address <your-ip> \
+  --end-ip-address <your-ip>
 ```
 
 ### Production Environment (Small to Medium)
@@ -288,7 +295,7 @@ For most users getting started with Spring PetClinic on Azure:
 
 ## References
 
-- [Azure Database for PostgreSQL Documentation](https://docs.microsoft.com/azure/postgresql/)
+- [Azure Database for PostgreSQL Documentation](https://learn.microsoft.com/azure/postgresql/)
 - [Flexible Server Pricing](https://azure.microsoft.com/pricing/details/postgresql/flexible-server/)
-- [PostgreSQL Best Practices](https://docs.microsoft.com/azure/postgresql/flexible-server/concepts-best-practices)
+- [PostgreSQL Best Practices](https://learn.microsoft.com/azure/postgresql/flexible-server/concepts-best-practices)
 - [Spring Boot PostgreSQL Integration](https://spring.io/guides/gs/accessing-data-postgresql/)

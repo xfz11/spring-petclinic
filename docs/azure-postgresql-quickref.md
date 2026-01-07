@@ -31,7 +31,7 @@ az postgres flexible-server create \
 - 2 vCores, 8 GiB RAM
 - 128 GB storage
 - High Availability enabled
-- ~$280-350/month
+- ~$280-350/month (includes HA)
 
 **Command**:
 ```bash
