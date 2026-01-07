@@ -16,7 +16,8 @@ param principalId string = ''
 param resourceToken string
 
 // Container Registry
-var acrName = 'acr${resourceToken}'
+// ACR name must be 5-50 characters, alphanumeric only
+var acrName = 'acr${substring(resourceToken, 0, 10)}'
 resource acr 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
   name: acrName
   location: location
