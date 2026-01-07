@@ -9,7 +9,7 @@
       "value": "dev"
     },
     "containerImage": {
-      "value": ""
+      "value": "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
     },
     "minReplicas": {
       "value": 1
