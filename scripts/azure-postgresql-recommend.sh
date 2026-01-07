@@ -6,9 +6,8 @@
 set -e
 
 # Configuration
+# Use AZURE_SUBSCRIPTION_ID environment variable or the workflow's default
 SUBSCRIPTION_ID="${AZURE_SUBSCRIPTION_ID:-a4ab3025-1b32-4394-92e0-d07c1ebf3787}"
-RESOURCE_TYPE="Microsoft.DBforPostgreSQL/flexibleServers"
-PREFERRED_REGIONS="${PREFERRED_REGIONS:-}"
 
 echo "=========================================="
 echo "Azure PostgreSQL Region & SKU Recommender"
@@ -44,13 +43,9 @@ echo "Available Regions for Azure Database for PostgreSQL Flexible Server:"
 echo "======================================================================"
 echo ""
 
-# Query available SKUs
-LOCATIONS=$(az postgres flexible-server list-skus --location eastus --query "[].name" -o tsv 2>/dev/null | head -1)
-
-if [ -z "$LOCATIONS" ]; then
-    echo "Using pre-configured recommended regions..."
-    echo ""
-fi
+# Note: Using pre-configured recommended regions based on quota analysis
+echo "Using pre-configured recommended regions..."
+echo ""
 
 # Recommended regions based on quota availability
 echo "Recommended Regions (with available quota):"

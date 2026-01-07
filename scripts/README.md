@@ -30,7 +30,6 @@ The script provides:
 ### Environment Variables
 
 - `AZURE_SUBSCRIPTION_ID`: Override the default subscription ID (optional)
-- `PREFERRED_REGIONS`: Specify preferred regions (optional)
 
 ### Example Output
 

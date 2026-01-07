@@ -121,7 +121,7 @@ az postgres flexible-server create \
   --tier Burstable \
   --storage-size 32 \
   --admin-user petclinic \
-  --admin-password "YourSecurePassword123!" \
+  --admin-password '<your-secure-password>' \
   --database-name petclinic \
   --public-access 0.0.0.0 \
   --version 16
@@ -137,7 +137,7 @@ az postgres flexible-server create \
   --tier GeneralPurpose \
   --storage-size 128 \
   --admin-user petclinic \
-  --admin-password "YourSecurePassword123!" \
+  --admin-password '<your-secure-password>' \
   --database-name petclinic \
   --high-availability ZoneRedundant \
   --standby-zone 2 \
