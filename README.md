@@ -40,9 +40,26 @@ You can then access the Petclinic at <http://localhost:8080/>.
 You can, of course, run Petclinic in your favorite IDE.
 See below for more details.
 
+## Deploying to Azure
+
+This project includes Bicep Infrastructure as Code (IaC) files to deploy to Azure. See [AZURE_DEPLOYMENT.md](AZURE_DEPLOYMENT.md) for a quick start guide.
+
+The deployment creates:
+- Azure Container Apps for hosting the application
+- Azure Database for PostgreSQL for data persistence
+- Azure Container Registry for storing container images
+
+For detailed deployment instructions, see [infra/README.md](infra/README.md).
+
 ## Building a Container
 
-There is no `Dockerfile` in this project. You can build a container image (if you have a docker daemon) using the Spring Boot build plugin:
+This project includes a `Dockerfile` for building container images. You can build a container image using:
+
+```bash
+docker build -t petclinic:latest .
+```
+
+Alternatively, you can use the Spring Boot build plugin:
 
 ```bash
 ./mvnw spring-boot:build-image
