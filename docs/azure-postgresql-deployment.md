@@ -89,7 +89,7 @@ az postgres flexible-server firewall-rule create \
 - **Memory**: 8 GiB
 - **Storage**: 128 GB (recommended)
 - **IOPS**: 3,100 baseline, up to 5,000 with scaling
-- **Cost**: ~$140-180/month (varies by region)
+- **Cost**: ~$140-180/month (base), ~$280-360/month (with HA)
 - **Use case**: Production workloads with moderate traffic
 
 ```bash
@@ -105,7 +105,7 @@ az postgres flexible-server create \
   --admin-user petclinic \
   --admin-password <your-secure-password> \
   --high-availability ZoneRedundant \
-  --backup-retention 7
+  --backup-retention 30
 ```
 
 ### Production Environment (High Performance)
@@ -115,7 +115,7 @@ az postgres flexible-server create \
 - **Memory**: 16 GiB
 - **Storage**: 256 GB (recommended)
 - **IOPS**: 6,400 baseline, up to 10,000 with scaling
-- **Cost**: ~$280-350/month (varies by region)
+- **Cost**: ~$280-350/month (base), ~$560-700/month (with HA)
 - **Use case**: High-traffic production workloads
 
 ```bash
@@ -302,7 +302,7 @@ For most users getting started with Spring PetClinic on Azure:
 
 **Total Monthly Cost Estimate**:
 - Development: ~$15-20/month
-- Production: ~$280-350/month (with HA)
+- Production: ~$280-360/month (with HA)
 
 ## References
 

@@ -84,11 +84,11 @@ export POSTGRES_PASS="<your-password>"
 |------|-----|--------|--------|----------|-------------|
 | Burstable | B1ms | 1 | 2 GiB | Dev/Test | $15-20 |
 | Burstable | B2s | 2 | 4 GiB | Small apps | $35-45 |
-| General Purpose | D2ds_v4 | 2 | 8 GiB | Production | $140-180 |
-| General Purpose | D4ds_v4 | 4 | 16 GiB | High traffic | $280-350 |
-| General Purpose | D8ds_v4 | 8 | 32 GiB | Enterprise | $560-700 |
+| General Purpose | D2ds_v4 | 2 | 8 GiB | Production | $140-180 (base)<br>$280-360 (with HA) |
+| General Purpose | D4ds_v4 | 4 | 16 GiB | High traffic | $280-350 (base)<br>$560-700 (with HA) |
+| General Purpose | D8ds_v4 | 8 | 32 GiB | Enterprise | $560-700 (base)<br>$1,120-1,400 (with HA) |
 
-*Note: Costs are approximate and vary by region. Add ~100% for High Availability.*
+*Note: Costs are approximate and vary by region.*
 
 ## Common Commands
 
