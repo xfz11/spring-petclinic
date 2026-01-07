@@ -82,7 +82,10 @@ resource database 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2023-03-0
   }
 }
 
-// Allow Azure services to access the server
+// Firewall rule configuration
+// WARNING: The default rule below allows all Azure services to connect.
+// For production deployments, replace this with specific IP addresses or use private endpoints.
+// Example: Add firewall rules for specific IPs or IP ranges that need access.
 resource firewallRule 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2023-03-01-preview' = {
   parent: postgresServer
   name: 'AllowAzureServices'
@@ -91,6 +94,12 @@ resource firewallRule 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2
     endIpAddress: '0.0.0.0'
   }
 }
+
+// For production, consider using private endpoint instead:
+// - Remove the firewall rule above
+// - Deploy a private endpoint in your VNet
+// - Access PostgreSQL only through private connectivity
+// See: https://learn.microsoft.com/azure/postgresql/flexible-server/concepts-networking
 
 output serverFqdn string = postgresServer.properties.fullyQualifiedDomainName
 output databaseName string = database.name

@@ -195,8 +195,48 @@ az account list --output table
 ### Issue: Quota exceeded
 **Solution**: Request quota increase or choose a different region recommended by the tool.
 
+## Security Considerations
+
+### Network Access
+
+**Development/Testing**: The default Bicep template includes a firewall rule that allows all Azure services to connect (IP range 0.0.0.0). This is convenient for development but **not recommended for production**.
+
+**Production**: For production deployments, consider these security best practices:
+
+1. **Use specific IP allowlisting**:
+   ```bash
+   az postgres flexible-server firewall-rule create \
+     --resource-group petclinic-rg \
+     --name $SERVER_NAME \
+     --rule-name AllowMyIP \
+     --start-ip-address YOUR_IP \
+     --end-ip-address YOUR_IP
+   ```
+
+2. **Use Private Endpoints** (Recommended):
+   - Deploy PostgreSQL in a Virtual Network
+   - Access only through private connectivity
+   - No public internet exposure
+   - See: [Azure PostgreSQL Private Link](https://learn.microsoft.com/azure/postgresql/flexible-server/concepts-networking)
+
+3. **Enable SSL/TLS**:
+   - Always use SSL connections for PostgreSQL
+   - Configure in application properties: `sslmode=require`
+
+4. **Use Azure AD Authentication**:
+   - Avoid password-based authentication in production
+   - Use managed identities where possible
+
+### Credentials Management
+
+- **Never commit passwords** to source control
+- Use Azure Key Vault for storing database credentials
+- Use managed identities for Azure-hosted applications
+- Rotate passwords regularly
+
 ## Additional Resources
 
 - [Azure PostgreSQL Flexible Server Documentation](https://learn.microsoft.com/azure/postgresql/flexible-server/)
 - [PostgreSQL SKU Pricing](https://azure.microsoft.com/pricing/details/postgresql/flexible-server/)
 - [Spring Boot PostgreSQL Configuration](https://docs.spring.io/spring-boot/docs/current/reference/html/data.html#data.sql.datasource)
+- [Azure PostgreSQL Security Best Practices](https://learn.microsoft.com/azure/postgresql/flexible-server/concepts-security)
