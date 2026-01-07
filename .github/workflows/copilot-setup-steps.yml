@@ -26,11 +26,11 @@ jobs:
       - name: Azure login
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: d8e173e1-90f5-43f7-a34b-494c1c56f9ec
+          tenant-id: 72f988bf-86f1-41af-91ab-2d7cd011db47
+          subscription-id: a4ab3025-1b32-4394-92e0-d07c1ebf3787
       
       - name: Verify Azure Login
         run: |
-          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          az account set --subscription a4ab3025-1b32-4394-92e0-d07c1ebf3787
           az account show
