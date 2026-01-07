@@ -34,3 +34,8 @@ jobs:
         run: |
           az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           az account show
+      
+      - name: Check Resource Groups
+        run: |
+          echo "Listing resource groups in subscription..."
+          az group list --output table
