@@ -1,0 +1,443 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.39.26.7824",
+      "templateHash": "10853064213387003236"
+    }
+  },
+  "parameters": {
+    "environmentName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "metadata": {
+        "description": "Name of the environment that can be used as part of naming resource convention"
+      }
+    },
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "Primary location for all resources"
+      }
+    },
+    "mysqlAdminLogin": {
+      "type": "securestring",
+      "defaultValue": "petclinicadmin",
+      "metadata": {
+        "description": "MySQL administrator login name"
+      }
+    },
+    "mysqlAdminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "MySQL administrator password"
+      }
+    },
+    "appServicePlanName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Name of the App Service Plan"
+      }
+    },
+    "appServiceName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Name of the App Service"
+      }
+    },
+    "mysqlServerName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Name of the MySQL Flexible Server"
+      }
+    },
+    "mysqlDatabaseName": {
+      "type": "string",
+      "defaultValue": "petclinic",
+      "metadata": {
+        "description": "Name of the MySQL database"
+      }
+    },
+    "keyVaultName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Name of the Key Vault"
+      }
+    },
+    "logAnalyticsName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Name of the Log Analytics workspace"
+      }
+    },
+    "applicationInsightsName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Name of the Application Insights"
+      }
+    }
+  },
+  "variables": {
+    "resourceToken": "[uniqueString(subscription().id, resourceGroup().id, parameters('location'), parameters('environmentName'))]",
+    "tags": {
+      "azd-env-name": "[parameters('environmentName')]"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "apiVersion": "2023-01-31",
+      "name": "[format('id-{0}', variables('resourceToken'))]",
+      "location": "[parameters('location')]",
+      "tags": "[variables('tags')]"
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2022-10-01",
+      "name": "[if(not(empty(parameters('logAnalyticsName'))), parameters('logAnalyticsName'), format('log-{0}', variables('resourceToken')))]",
+      "location": "[parameters('location')]",
+      "tags": "[variables('tags')]",
+      "properties": {
+        "sku": {
+          "name": "PerGB2018"
+        },
+        "retentionInDays": 30
+      }
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[if(not(empty(parameters('applicationInsightsName'))), parameters('applicationInsightsName'), format('appi-{0}', variables('resourceToken')))]",
+      "location": "[parameters('location')]",
+      "tags": "[variables('tags')]",
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web",
+        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', if(not(empty(parameters('logAnalyticsName'))), parameters('logAnalyticsName'), format('log-{0}', variables('resourceToken'))))]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.OperationalInsights/workspaces', if(not(empty(parameters('logAnalyticsName'))), parameters('logAnalyticsName'), format('log-{0}', variables('resourceToken'))))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2023-07-01",
+      "name": "[if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken')))]",
+      "location": "[parameters('location')]",
+      "tags": "[variables('tags')]",
+      "properties": {
+        "enabledForDeployment": false,
+        "enabledForTemplateDeployment": true,
+        "enabledForDiskEncryption": false,
+        "enableRbacAuthorization": true,
+        "publicNetworkAccess": "Enabled",
+        "tenantId": "[subscription().tenantId]",
+        "sku": {
+          "name": "standard",
+          "family": "A"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[format('Microsoft.KeyVault/vaults/{0}', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken'))))]",
+      "name": "[guid(resourceId('Microsoft.KeyVault/vaults', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken')))), resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', variables('resourceToken'))), 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7')]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7')]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', variables('resourceToken'))), '2023-01-31').principalId]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken'))))]",
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', variables('resourceToken')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.DBforMySQL/flexibleServers",
+      "apiVersion": "2023-12-30",
+      "name": "[if(not(empty(parameters('mysqlServerName'))), parameters('mysqlServerName'), format('mysql-{0}', variables('resourceToken')))]",
+      "location": "[parameters('location')]",
+      "tags": "[variables('tags')]",
+      "sku": {
+        "name": "Standard_B1ms",
+        "tier": "Burstable"
+      },
+      "properties": {
+        "administratorLogin": "[parameters('mysqlAdminLogin')]",
+        "administratorLoginPassword": "[parameters('mysqlAdminPassword')]",
+        "version": "8.0.21",
+        "storage": {
+          "storageSizeGB": 32,
+          "autoGrow": "Enabled"
+        },
+        "backup": {
+          "backupRetentionDays": 7,
+          "geoRedundantBackup": "Disabled"
+        },
+        "highAvailability": {
+          "mode": "Disabled"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.DBforMySQL/flexibleServers/databases",
+      "apiVersion": "2023-12-30",
+      "name": "[format('{0}/{1}', if(not(empty(parameters('mysqlServerName'))), parameters('mysqlServerName'), format('mysql-{0}', variables('resourceToken'))), parameters('mysqlDatabaseName'))]",
+      "properties": {
+        "charset": "utf8mb4",
+        "collation": "utf8mb4_unicode_ci"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DBforMySQL/flexibleServers', if(not(empty(parameters('mysqlServerName'))), parameters('mysqlServerName'), format('mysql-{0}', variables('resourceToken'))))]"
+      ]
+    },
+    {
+      "type": "Microsoft.DBforMySQL/flexibleServers/firewallRules",
+      "apiVersion": "2023-12-30",
+      "name": "[format('{0}/{1}', if(not(empty(parameters('mysqlServerName'))), parameters('mysqlServerName'), format('mysql-{0}', variables('resourceToken'))), 'AllowAzureServices')]",
+      "properties": {
+        "startIpAddress": "0.0.0.0",
+        "endIpAddress": "0.0.0.0"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DBforMySQL/flexibleServers', if(not(empty(parameters('mysqlServerName'))), parameters('mysqlServerName'), format('mysql-{0}', variables('resourceToken'))))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2023-07-01",
+      "name": "[format('{0}/{1}', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken'))), 'MYSQL-URL')]",
+      "properties": {
+        "value": "[format('jdbc:mysql://{0}:3306/{1}?sslMode=REQUIRED', reference(resourceId('Microsoft.DBforMySQL/flexibleServers', if(not(empty(parameters('mysqlServerName'))), parameters('mysqlServerName'), format('mysql-{0}', variables('resourceToken')))), '2023-12-30').fullyQualifiedDomainName, parameters('mysqlDatabaseName'))]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken'))))]",
+        "[extensionResourceId(resourceId('Microsoft.KeyVault/vaults', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken')))), 'Microsoft.Authorization/roleAssignments', guid(resourceId('Microsoft.KeyVault/vaults', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken')))), resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', variables('resourceToken'))), 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'))]",
+        "[resourceId('Microsoft.DBforMySQL/flexibleServers', if(not(empty(parameters('mysqlServerName'))), parameters('mysqlServerName'), format('mysql-{0}', variables('resourceToken'))))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2023-07-01",
+      "name": "[format('{0}/{1}', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken'))), 'MYSQL-USER')]",
+      "properties": {
+        "value": "[parameters('mysqlAdminLogin')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken'))))]",
+        "[extensionResourceId(resourceId('Microsoft.KeyVault/vaults', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken')))), 'Microsoft.Authorization/roleAssignments', guid(resourceId('Microsoft.KeyVault/vaults', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken')))), resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', variables('resourceToken'))), 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2023-07-01",
+      "name": "[format('{0}/{1}', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken'))), 'MYSQL-PASS')]",
+      "properties": {
+        "value": "[parameters('mysqlAdminPassword')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken'))))]",
+        "[extensionResourceId(resourceId('Microsoft.KeyVault/vaults', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken')))), 'Microsoft.Authorization/roleAssignments', guid(resourceId('Microsoft.KeyVault/vaults', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken')))), resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', variables('resourceToken'))), 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2023-12-01",
+      "name": "[if(not(empty(parameters('appServicePlanName'))), parameters('appServicePlanName'), format('plan-{0}', variables('resourceToken')))]",
+      "location": "[parameters('location')]",
+      "tags": "[variables('tags')]",
+      "sku": {
+        "name": "B2",
+        "tier": "Basic",
+        "size": "B2",
+        "family": "B",
+        "capacity": 1
+      },
+      "kind": "linux",
+      "properties": {
+        "reserved": true
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2023-12-01",
+      "name": "[if(not(empty(parameters('appServiceName'))), parameters('appServiceName'), format('app-{0}', variables('resourceToken')))]",
+      "location": "[parameters('location')]",
+      "tags": "[union(variables('tags'), createObject('azd-service-name', 'web'))]",
+      "kind": "app,linux",
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', variables('resourceToken'))))]": {}
+        }
+      },
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', if(not(empty(parameters('appServicePlanName'))), parameters('appServicePlanName'), format('plan-{0}', variables('resourceToken'))))]",
+        "httpsOnly": true,
+        "keyVaultReferenceIdentity": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', variables('resourceToken')))]",
+        "siteConfig": {
+          "linuxFxVersion": "JAVA|17-java17",
+          "alwaysOn": true,
+          "ftpsState": "Disabled",
+          "minTlsVersion": "1.2",
+          "cors": {
+            "allowedOrigins": [
+              "*"
+            ],
+            "supportCredentials": false
+          },
+          "appSettings": [
+            {
+              "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+              "value": "[reference(resourceId('Microsoft.Insights/components', if(not(empty(parameters('applicationInsightsName'))), parameters('applicationInsightsName'), format('appi-{0}', variables('resourceToken')))), '2020-02-02').ConnectionString]"
+            },
+            {
+              "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
+              "value": "~3"
+            },
+            {
+              "name": "SPRING_PROFILES_ACTIVE",
+              "value": "mysql"
+            },
+            {
+              "name": "MYSQL_URL",
+              "value": "[format('@Microsoft.KeyVault(VaultName={0};SecretName=MYSQL-URL)', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken'))))]"
+            },
+            {
+              "name": "MYSQL_USER",
+              "value": "[format('@Microsoft.KeyVault(VaultName={0};SecretName=MYSQL-USER)', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken'))))]"
+            },
+            {
+              "name": "MYSQL_PASS",
+              "value": "[format('@Microsoft.KeyVault(VaultName={0};SecretName=MYSQL-PASS)', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken'))))]"
+            },
+            {
+              "name": "PORT",
+              "value": "8080"
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Insights/components', if(not(empty(parameters('applicationInsightsName'))), parameters('applicationInsightsName'), format('appi-{0}', variables('resourceToken'))))]",
+        "[resourceId('Microsoft.Web/serverfarms', if(not(empty(parameters('appServicePlanName'))), parameters('appServicePlanName'), format('plan-{0}', variables('resourceToken'))))]",
+        "[resourceId('Microsoft.KeyVault/vaults', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken'))))]",
+        "[extensionResourceId(resourceId('Microsoft.KeyVault/vaults', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken')))), 'Microsoft.Authorization/roleAssignments', guid(resourceId('Microsoft.KeyVault/vaults', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken')))), resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', variables('resourceToken'))), 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'))]",
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', variables('resourceToken')))]",
+        "[resourceId('Microsoft.KeyVault/vaults/secrets', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken'))), 'MYSQL-URL')]",
+        "[resourceId('Microsoft.KeyVault/vaults/secrets', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken'))), 'MYSQL-PASS')]",
+        "[resourceId('Microsoft.KeyVault/vaults/secrets', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken'))), 'MYSQL-USER')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Insights/diagnosticSettings",
+      "apiVersion": "2021-05-01-preview",
+      "scope": "[format('Microsoft.Web/sites/{0}', if(not(empty(parameters('appServiceName'))), parameters('appServiceName'), format('app-{0}', variables('resourceToken'))))]",
+      "name": "diagnostics",
+      "properties": {
+        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', if(not(empty(parameters('logAnalyticsName'))), parameters('logAnalyticsName'), format('log-{0}', variables('resourceToken'))))]",
+        "logs": [
+          {
+            "category": "AppServiceHTTPLogs",
+            "enabled": true
+          },
+          {
+            "category": "AppServiceConsoleLogs",
+            "enabled": true
+          },
+          {
+            "category": "AppServiceAppLogs",
+            "enabled": true
+          }
+        ],
+        "metrics": [
+          {
+            "category": "AllMetrics",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', if(not(empty(parameters('appServiceName'))), parameters('appServiceName'), format('app-{0}', variables('resourceToken'))))]",
+        "[resourceId('Microsoft.OperationalInsights/workspaces', if(not(empty(parameters('logAnalyticsName'))), parameters('logAnalyticsName'), format('log-{0}', variables('resourceToken'))))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "AZURE_LOCATION": {
+      "type": "string",
+      "value": "[parameters('location')]"
+    },
+    "AZURE_TENANT_ID": {
+      "type": "string",
+      "value": "[subscription().tenantId]"
+    },
+    "AZURE_SUBSCRIPTION_ID": {
+      "type": "string",
+      "value": "[subscription().subscriptionId]"
+    },
+    "RESOURCE_GROUP_ID": {
+      "type": "string",
+      "value": "[resourceGroup().id]"
+    },
+    "APPLICATIONINSIGHTS_CONNECTION_STRING": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Insights/components', if(not(empty(parameters('applicationInsightsName'))), parameters('applicationInsightsName'), format('appi-{0}', variables('resourceToken')))), '2020-02-02').ConnectionString]"
+    },
+    "APPLICATIONINSIGHTS_NAME": {
+      "type": "string",
+      "value": "[if(not(empty(parameters('applicationInsightsName'))), parameters('applicationInsightsName'), format('appi-{0}', variables('resourceToken')))]"
+    },
+    "AZURE_KEY_VAULT_NAME": {
+      "type": "string",
+      "value": "[if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken')))]"
+    },
+    "AZURE_KEY_VAULT_ENDPOINT": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.KeyVault/vaults', if(not(empty(parameters('keyVaultName'))), parameters('keyVaultName'), format('kv{0}', variables('resourceToken')))), '2023-07-01').vaultUri]"
+    },
+    "AZURE_MANAGED_IDENTITY_ID": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', variables('resourceToken')))]"
+    },
+    "AZURE_MANAGED_IDENTITY_CLIENT_ID": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-{0}', variables('resourceToken'))), '2023-01-31').clientId]"
+    },
+    "MYSQL_SERVER_NAME": {
+      "type": "string",
+      "value": "[if(not(empty(parameters('mysqlServerName'))), parameters('mysqlServerName'), format('mysql-{0}', variables('resourceToken')))]"
+    },
+    "MYSQL_SERVER_FQDN": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.DBforMySQL/flexibleServers', if(not(empty(parameters('mysqlServerName'))), parameters('mysqlServerName'), format('mysql-{0}', variables('resourceToken')))), '2023-12-30').fullyQualifiedDomainName]"
+    },
+    "MYSQL_DATABASE_NAME": {
+      "type": "string",
+      "value": "[parameters('mysqlDatabaseName')]"
+    },
+    "APP_SERVICE_PLAN_NAME": {
+      "type": "string",
+      "value": "[if(not(empty(parameters('appServicePlanName'))), parameters('appServicePlanName'), format('plan-{0}', variables('resourceToken')))]"
+    },
+    "APP_SERVICE_NAME": {
+      "type": "string",
+      "value": "[if(not(empty(parameters('appServiceName'))), parameters('appServiceName'), format('app-{0}', variables('resourceToken')))]"
+    },
+    "APP_SERVICE_URL": {
+      "type": "string",
+      "value": "[format('https://{0}', reference(resourceId('Microsoft.Web/sites', if(not(empty(parameters('appServiceName'))), parameters('appServiceName'), format('app-{0}', variables('resourceToken')))), '2023-12-01').defaultHostName)]"
+    }
+  }
+}
