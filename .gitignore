@@ -46,3 +46,11 @@ out/
 _site/
 *.css
 !petclinic.css
+
+### Azure ###
+# Azure Developer CLI
+.azure/**
+!.azure/*.md
+# Compiled Bicep templates
+infra/**/*.json
+!infra/main.parameters.json
