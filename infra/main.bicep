@@ -10,6 +10,7 @@ param environmentName string
 param location string
 
 @description('MySQL administrator login name')
+@secure()
 param mysqlAdminLogin string = 'petclinicadmin'
 
 @description('MySQL administrator password')
@@ -225,7 +226,8 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
       minTlsVersion: '1.2'
       cors: {
         allowedOrigins: [
-          '*'
+          'https://*.azurewebsites.net'
+          'https://localhost:*'
         ]
         supportCredentials: false
       }

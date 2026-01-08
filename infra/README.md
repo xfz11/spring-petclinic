@@ -178,6 +178,8 @@ az group delete --name rg-dev-spring-petclinic --yes --no-wait
 
 2. **Key Vault Secrets**: Database credentials are stored in Azure Key Vault and referenced via Key Vault references in App Service configuration.
 
+3. **CORS Configuration**: By default, CORS is configured to allow requests from Azure Web Apps (*.azurewebsites.net) and localhost for development. Update the allowedOrigins in main.bicep if you need to allow other domains.
+
 3. **SSL/TLS**: 
    - HTTPS is enforced on the App Service
    - MySQL connections require SSL (sslMode=REQUIRED)

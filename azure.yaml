@@ -16,11 +16,15 @@ hooks:
       shell: sh
       run: |
         echo "Building Spring PetClinic application..."
+        # Skip tests during deployment for faster builds. Run tests separately before deploying.
+        # For production, consider removing -DskipTests or use: ./mvnw clean package
         ./mvnw clean package -DskipTests
         echo "Build completed successfully!"
     windows:
       shell: pwsh
       run: |
         echo "Building Spring PetClinic application..."
+        # Skip tests during deployment for faster builds. Run tests separately before deploying.
+        # For production, consider removing -DskipTests or use: ./mvnw.cmd clean package
         ./mvnw.cmd clean package -DskipTests
         echo "Build completed successfully!"
