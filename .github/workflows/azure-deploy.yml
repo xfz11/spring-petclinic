@@ -44,6 +44,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     environment: dev
+    env:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_ENV_NAME: ${{ env.AZURE_ENV_NAME }}
+      AZURE_LOCATION: ${{ env.AZURE_LOCATION }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
