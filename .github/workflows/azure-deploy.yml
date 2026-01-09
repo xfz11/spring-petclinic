@@ -53,6 +53,14 @@ jobs:
             --tenant-id "$Env:AZURE_TENANT_ID"
         shell: pwsh
 
+      - name: Set up environment variables
+        run: |
+          azd env new ${{ env.AZURE_ENV_NAME }} --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} --location ${{ env.AZURE_LOCATION }} || true
+          azd env select ${{ env.AZURE_ENV_NAME }}
+          azd env set AZURE_SUBSCRIPTION_ID ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          azd env set AZURE_LOCATION ${{ env.AZURE_LOCATION }}
+          azd env set AZURE_ENV_NAME ${{ env.AZURE_ENV_NAME }}
+
       - name: Provision Infrastructure
         run: azd provision --no-prompt
         env:
