@@ -28,13 +28,14 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: dev
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Install azd
-        uses: Azure/setup-azd@v1.0.0
+        uses: Azure/setup-azd@v2
 
       - name: Azure Login using OIDC
         uses: azure/login@v2
@@ -52,19 +53,19 @@ jobs:
             --tenant-id "$Env:AZURE_TENANT_ID"
         shell: bash
         env:
-          Env:AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
-          Env:AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          Env:AZURE_CLIENT_ID: ${{ env.AZURE_CLIENT_ID }}
+          Env:AZURE_TENANT_ID: ${{ env.AZURE_TENANT_ID }}
 
       - name: Provision Infrastructure
         run: azd provision --no-prompt
         env:
-          AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
-          AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
-          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          AZURE_ENV_NAME: ${{ env.AZURE_ENV_NAME }}
+          AZURE_LOCATION: ${{ env.AZURE_LOCATION }}
+          AZURE_SUBSCRIPTION_ID: ${{ env.AZURE_SUBSCRIPTION_ID }}
 
       - name: Deploy Application
         run: azd deploy --no-prompt
         env:
-          AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
-          AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
-          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          AZURE_ENV_NAME: ${{ env.AZURE_ENV_NAME }}
+          AZURE_LOCATION: ${{ env.AZURE_LOCATION }}
+          AZURE_SUBSCRIPTION_ID: ${{ env.AZURE_SUBSCRIPTION_ID }}
