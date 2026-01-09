@@ -2,6 +2,16 @@ name: Deploy to Azure Container Apps
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - 'Dockerfile'
+      - 'azure.yaml'
+      - 'infra/**'
+      - '.github/workflows/azure-deploy.yml'
   push:
     branches:
       - main
