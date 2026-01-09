@@ -52,7 +52,6 @@ param ingressEnabled bool = true
 param revisionMode string = 'Single'
 
 @description('The secrets required for the container')
-@secure()
 param secrets array = []
 
 @description('The service binds associated with the container')
