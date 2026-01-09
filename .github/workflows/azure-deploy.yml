@@ -38,11 +38,14 @@ jobs:
       - name: Log in with Azure (Federated Credentials)
         if: ${{ env.AZURE_CLIENT_ID != '' }}
         run: |
-          azd auth login `
-            --client-id "$Env:AZURE_CLIENT_ID" `
-            --federated-credential-provider "github" `
+          azd auth login \
+            --client-id "$Env:AZURE_CLIENT_ID" \
+            --federated-credential-provider "github" \
             --tenant-id "$Env:AZURE_TENANT_ID"
-        shell: pwsh
+        shell: bash
+        env:
+          Env:AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          Env:AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
 
       - name: Provision Infrastructure
         run: azd provision --no-prompt

@@ -144,6 +144,9 @@ resource petClinicApp 'Microsoft.App/containerApps@2024-03-01' = {
         external: true
         targetPort: 8080
         transport: 'auto'
+        // Note: CORS is configured to allow all origins for development.
+        // In production, restrict to specific origins for security:
+        // allowedOrigins: ['https://yourdomain.com']
         corsPolicy: {
           allowedOrigins: ['*']
           allowedMethods: ['*']
@@ -161,6 +164,8 @@ resource petClinicApp 'Microsoft.App/containerApps@2024-03-01' = {
       containers: [
         {
           name: 'petclinic'
+          // Note: Using placeholder image for initial deployment. 
+          // AZD will automatically update this to the built petclinic image from ACR during 'azd deploy'
           image: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
           resources: {
             cpu: json('0.5')
