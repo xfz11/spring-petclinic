@@ -12,9 +12,8 @@ RUN apt-get update && \
 COPY pom.xml .
 COPY src src
 
-# Build with Maven, using insecure flag as workaround for certificate issues in build environments
-RUN mvn package -DskipTests -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true || \
-    (echo "Maven build failed, trying with local build..." && exit 1)
+# Build with Maven
+RUN mvn package -DskipTests
 RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
 
 # Production stage

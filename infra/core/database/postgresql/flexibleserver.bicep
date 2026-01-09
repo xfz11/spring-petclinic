@@ -40,7 +40,7 @@ param skuName string = 'Standard_B1ms'
 @description('Storage size in GB')
 param storageSizeGB int = 32
 
-resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-03-01-preview' = {
+resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-06-01-preview' = {
   name: name
   location: location
   tags: tags
@@ -65,7 +65,7 @@ resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-03-01-pr
   }
 }
 
-resource databases 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2023-03-01-preview' = [for databaseName in databaseNames: {
+resource databases 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2023-06-01-preview' = [for databaseName in databaseNames: {
   name: databaseName
   parent: postgresServer
   properties: {
@@ -74,7 +74,7 @@ resource databases 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2023-03-
   }
 }]
 
-resource allowAzureIPsFirewallRule 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2023-03-01-preview' = if (allowAzureIPsFirewall) {
+resource allowAzureIPsFirewallRule 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2023-06-01-preview' = if (allowAzureIPsFirewall) {
   name: 'AllowAllAzureServicesAndResourcesWithinAzureIps'
   parent: postgresServer
   properties: {

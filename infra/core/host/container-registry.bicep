@@ -13,7 +13,7 @@ param adminUserEnabled bool = true
 ])
 param sku string = 'Basic'
 
-resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' = {
+resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
   name: name
   location: location
   tags: tags

@@ -67,7 +67,7 @@ resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-05-01'
   name: containerAppsEnvironmentName
 }
 
-resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' existing = if (!empty(containerRegistryName)) {
+resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = if (!empty(containerRegistryName)) {
   name: containerRegistryName
 }
 

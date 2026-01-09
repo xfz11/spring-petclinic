@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.39.26.7824",
-      "templateHash": "9085177845991506605"
+      "templateHash": "13140520016311167695"
     }
   },
   "parameters": {
@@ -103,7 +103,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "8075194076479614720"
+              "templateHash": "13974927702741261781"
             }
           },
           "parameters": {
@@ -141,7 +141,7 @@
           "resources": [
             {
               "type": "Microsoft.ContainerRegistry/registries",
-              "apiVersion": "2023-01-01-preview",
+              "apiVersion": "2023-07-01",
               "name": "[parameters('name')]",
               "location": "[parameters('location')]",
               "tags": "[parameters('tags')]",
@@ -157,7 +157,7 @@
           "outputs": {
             "loginServer": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.ContainerRegistry/registries', parameters('name')), '2023-01-01-preview').loginServer]"
+              "value": "[reference(resourceId('Microsoft.ContainerRegistry/registries', parameters('name')), '2023-07-01').loginServer]"
             },
             "name": {
               "type": "string",
@@ -304,7 +304,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "5439352869228388440"
+              "templateHash": "1872186220921831705"
             }
           },
           "parameters": {
@@ -390,7 +390,7 @@
           "resources": [
             {
               "type": "Microsoft.DBforPostgreSQL/flexibleServers",
-              "apiVersion": "2023-03-01-preview",
+              "apiVersion": "2023-06-01-preview",
               "name": "[parameters('name')]",
               "location": "[parameters('location')]",
               "tags": "[parameters('tags')]",
@@ -420,7 +420,7 @@
                 "count": "[length(parameters('databaseNames'))]"
               },
               "type": "Microsoft.DBforPostgreSQL/flexibleServers/databases",
-              "apiVersion": "2023-03-01-preview",
+              "apiVersion": "2023-06-01-preview",
               "name": "[format('{0}/{1}', parameters('name'), parameters('databaseNames')[copyIndex()])]",
               "properties": {
                 "charset": "UTF8",
@@ -433,7 +433,7 @@
             {
               "condition": "[parameters('allowAzureIPsFirewall')]",
               "type": "Microsoft.DBforPostgreSQL/flexibleServers/firewallRules",
-              "apiVersion": "2023-03-01-preview",
+              "apiVersion": "2023-06-01-preview",
               "name": "[format('{0}/{1}', parameters('name'), 'AllowAllAzureServicesAndResourcesWithinAzureIps')]",
               "properties": {
                 "startIpAddress": "0.0.0.0",
@@ -451,7 +451,7 @@
             },
             "POSTGRES_DOMAIN_NAME": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.DBforPostgreSQL/flexibleServers', parameters('name')), '2023-03-01-preview').fullyQualifiedDomainName]"
+              "value": "[reference(resourceId('Microsoft.DBforPostgreSQL/flexibleServers', parameters('name')), '2023-06-01-preview').fullyQualifiedDomainName]"
             }
           }
         }
