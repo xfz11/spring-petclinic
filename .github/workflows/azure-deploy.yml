@@ -60,6 +60,8 @@ jobs:
           azd env set AZURE_SUBSCRIPTION_ID ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           azd env set AZURE_LOCATION ${{ env.AZURE_LOCATION }}
           azd env set AZURE_ENV_NAME ${{ env.AZURE_ENV_NAME }}
+          az group create --location ${{ env.AZURE_LOCATION }} --name rg-${{ env.AZURE_ENV_NAME }}
+          azd env set AZURE_RESOURCE_GROUP rg-${{ env.AZURE_ENV_NAME }}
 
       - name: Provision Infrastructure
         run: azd provision --no-prompt
