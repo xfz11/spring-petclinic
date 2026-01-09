@@ -1,0 +1,14 @@
+.git
+.gitignore
+.mvn
+target
+*.md
+.github
+.editorconfig
+.gitpod.yml
+k8s
+docker-compose.yml
+Dockerfile
+.dockerignore
+infra
+.azure
