@@ -29,9 +29,9 @@ jobs:
       - name: Azure Login using OIDC
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: 2fd0f1c8-3efc-4963-9f23-d3bd9a639fc5
+          tenant-id: 72f988bf-86f1-41af-91ab-2d7cd011db47
+          subscription-id: a4ab3025-1b32-4394-92e0-d07c1ebf3787
 
       - name: Log in with Azure (Federated Credentials)
         if: ${{ env.AZURE_CLIENT_ID != '' }}
