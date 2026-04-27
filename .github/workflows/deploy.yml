@@ -1,0 +1,141 @@
+name: CI/CD - Build and Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  JAVA_VERSION: '17'
+
+jobs:
+  # ============================================================
+  # CI: Build and Test
+  # ============================================================
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'microsoft'
+          cache: 'maven'
+
+      - name: Build with Maven
+        run: ./mvnw package -B
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: target/*.jar
+          retention-days: 5
+
+  # ============================================================
+  # CD: Deploy to Dev
+  # ============================================================
+  deploy-dev:
+    name: Deploy to Dev
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push image to ACR
+        run: |
+          az acr login --name ${{ vars.ACR_NAME }}
+          docker build -t ${{ vars.ACR_NAME }}.azurecr.io/${{ vars.CONTAINER_APP_NAME }}:${{ github.sha }} .
+          docker push ${{ vars.ACR_NAME }}.azurecr.io/${{ vars.CONTAINER_APP_NAME }}:${{ github.sha }}
+
+      - name: Deploy to Container App
+        run: |
+          az containerapp update \
+            --name ${{ vars.CONTAINER_APP_NAME }} \
+            --resource-group ${{ vars.RESOURCE_GROUP_NAME }} \
+            --image ${{ vars.ACR_NAME }}.azurecr.io/${{ vars.CONTAINER_APP_NAME }}:${{ github.sha }}
+
+  # ============================================================
+  # CD: Deploy to Staging
+  # ============================================================
+  deploy-staging:
+    name: Deploy to Staging
+    needs: deploy-dev
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push image to ACR
+        run: |
+          az acr login --name ${{ vars.ACR_NAME }}
+          docker build -t ${{ vars.ACR_NAME }}.azurecr.io/${{ vars.CONTAINER_APP_NAME }}:${{ github.sha }} .
+          docker push ${{ vars.ACR_NAME }}.azurecr.io/${{ vars.CONTAINER_APP_NAME }}:${{ github.sha }}
+
+      - name: Deploy to Container App
+        run: |
+          az containerapp update \
+            --name ${{ vars.CONTAINER_APP_NAME }} \
+            --resource-group ${{ vars.RESOURCE_GROUP_NAME }} \
+            --image ${{ vars.ACR_NAME }}.azurecr.io/${{ vars.CONTAINER_APP_NAME }}:${{ github.sha }}
+
+  # ============================================================
+  # CD: Deploy to Production
+  # ============================================================
+  deploy-production:
+    name: Deploy to Production
+    needs: deploy-staging
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push image to ACR
+        run: |
+          az acr login --name ${{ vars.ACR_NAME }}
+          docker build -t ${{ vars.ACR_NAME }}.azurecr.io/${{ vars.CONTAINER_APP_NAME }}:${{ github.sha }} .
+          docker push ${{ vars.ACR_NAME }}.azurecr.io/${{ vars.CONTAINER_APP_NAME }}:${{ github.sha }}
+
+      - name: Deploy to Container App
+        run: |
+          az containerapp update \
+            --name ${{ vars.CONTAINER_APP_NAME }} \
+            --resource-group ${{ vars.RESOURCE_GROUP_NAME }} \
+            --image ${{ vars.ACR_NAME }}.azurecr.io/${{ vars.CONTAINER_APP_NAME }}:${{ github.sha }}
