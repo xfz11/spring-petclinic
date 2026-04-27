@@ -8,9 +8,6 @@ permissions:
   id-token: write
   contents: read
 
-env:
-  DOCKER_IMAGE_NAME: spring-petclinic
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -34,111 +31,26 @@ jobs:
         id: meta
         run: echo "tag=${{ github.sha }}" >> "$GITHUB_OUTPUT"
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-jar
-          path: target/*.jar
-          retention-days: 1
-
   deploy-dev:
     needs: build
-    runs-on: ubuntu-latest
-    environment: dev
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: app-jar
-          path: target
-
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          client-id: ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Build and push image to ACR
-        run: |
-          az acr login --name ${{ vars.ACR_NAME }}
-          docker build -t ${{ vars.ACR_NAME }}.azurecr.io/${{ env.DOCKER_IMAGE_NAME }}:${{ needs.build.outputs.image-tag }} .
-          docker push ${{ vars.ACR_NAME }}.azurecr.io/${{ env.DOCKER_IMAGE_NAME }}:${{ needs.build.outputs.image-tag }}
-
-      - name: Deploy to Container App
-        run: |
-          az containerapp update \
-            --name ${{ vars.CONTAINER_APP_NAME }} \
-            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-            --image ${{ vars.ACR_NAME }}.azurecr.io/${{ env.DOCKER_IMAGE_NAME }}:${{ needs.build.outputs.image-tag }}
+    uses: ./.github/workflows/deploy-reusable.yml
+    with:
+      environment: dev
+      image-tag: ${{ needs.build.outputs.image-tag }}
+      docker-image-name: spring-petclinic
 
   deploy-staging:
     needs: [build, deploy-dev]
-    runs-on: ubuntu-latest
-    environment: staging
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: app-jar
-          path: target
-
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          client-id: ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Build and push image to ACR
-        run: |
-          az acr login --name ${{ vars.ACR_NAME }}
-          docker build -t ${{ vars.ACR_NAME }}.azurecr.io/${{ env.DOCKER_IMAGE_NAME }}:${{ needs.build.outputs.image-tag }} .
-          docker push ${{ vars.ACR_NAME }}.azurecr.io/${{ env.DOCKER_IMAGE_NAME }}:${{ needs.build.outputs.image-tag }}
-
-      - name: Deploy to Container App
-        run: |
-          az containerapp update \
-            --name ${{ vars.CONTAINER_APP_NAME }} \
-            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-            --image ${{ vars.ACR_NAME }}.azurecr.io/${{ env.DOCKER_IMAGE_NAME }}:${{ needs.build.outputs.image-tag }}
+    uses: ./.github/workflows/deploy-reusable.yml
+    with:
+      environment: staging
+      image-tag: ${{ needs.build.outputs.image-tag }}
+      docker-image-name: spring-petclinic
 
   deploy-production:
     needs: [build, deploy-staging]
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: app-jar
-          path: target
-
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          client-id: ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Build and push image to ACR
-        run: |
-          az acr login --name ${{ vars.ACR_NAME }}
-          docker build -t ${{ vars.ACR_NAME }}.azurecr.io/${{ env.DOCKER_IMAGE_NAME }}:${{ needs.build.outputs.image-tag }} .
-          docker push ${{ vars.ACR_NAME }}.azurecr.io/${{ env.DOCKER_IMAGE_NAME }}:${{ needs.build.outputs.image-tag }}
-
-      - name: Deploy to Container App
-        run: |
-          az containerapp update \
-            --name ${{ vars.CONTAINER_APP_NAME }} \
-            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-            --image ${{ vars.ACR_NAME }}.azurecr.io/${{ env.DOCKER_IMAGE_NAME }}:${{ needs.build.outputs.image-tag }}
+    uses: ./.github/workflows/deploy-reusable.yml
+    with:
+      environment: production
+      image-tag: ${{ needs.build.outputs.image-tag }}
+      docker-image-name: spring-petclinic
