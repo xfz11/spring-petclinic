@@ -12,6 +12,9 @@ param containerImage string = 'mcr.microsoft.com/azuredocs/containerapps-hellowo
 @description('Container app port')
 param containerPort int = 8080
 
+@description('Minimum number of replicas')
+param minReplicas int = 0
+
 var resourceToken = uniqueString(subscription().id, location, environmentName)
 var resourceGroupName = 'rg-${environmentName}'
 
@@ -31,6 +34,7 @@ module resources 'resources.bicep' = {
     resourceToken: resourceToken
     containerImage: containerImage
     containerPort: containerPort
+    minReplicas: minReplicas
   }
 }
 

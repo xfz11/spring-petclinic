@@ -13,6 +13,9 @@ param containerImage string
 @description('Container app port')
 param containerPort int
 
+@description('Minimum number of replicas (set to 1 for production to avoid cold starts)')
+param minReplicas int = 0
+
 // ============================================================
 // User-Assigned Managed Identity
 // ============================================================
@@ -51,7 +54,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 // ============================================================
 // Azure Container Registry
 // ============================================================
-resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {
+resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
   name: 'azacr${resourceToken}'
   location: location
   sku: {
@@ -148,7 +151,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
         }
       ]
       scale: {
-        minReplicas: 0
+        minReplicas: minReplicas
         maxReplicas: 3
         rules: [
           {
