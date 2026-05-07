@@ -1,0 +1,121 @@
+name: Deploy to Azure Container Apps
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AZURE_RESOURCE_GROUP: rg-petclinic-${{ github.event.inputs.environment }}
+  APPLICATION_NAME: petclinic
+  
+jobs:
+  deploy-infrastructure:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    outputs:
+      acrName: ${{ steps.deploy.outputs.acrName }}
+      acrLoginServer: ${{ steps.deploy.outputs.acrLoginServer }}
+      containerAppUrl: ${{ steps.deploy.outputs.containerAppUrl }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy Bicep template
+        id: deploy
+        uses: azure/arm-deploy@v2
+        with:
+          scope: subscription
+          region: eastus
+          template: ./infra/main.bicep
+          parameters: >
+            ./infra/main.bicepparam
+            resourceGroupName=${{ env.AZURE_RESOURCE_GROUP }}
+            environmentName=${{ github.event.inputs.environment }}
+            applicationName=${{ env.APPLICATION_NAME }}
+            postgresAdminPassword=${{ secrets.POSTGRES_ADMIN_PASSWORD }}
+          deploymentName: petclinic-${{ github.run_number }}
+
+      - name: Set output variables
+        id: outputs
+        run: |
+          DEPLOYMENT_NAME="petclinic-${{ github.run_number }}"
+          ACR_NAME=$(az deployment sub show --name $DEPLOYMENT_NAME --query properties.outputs.containerRegistryName.value -o tsv)
+          ACR_LOGIN_SERVER=$(az deployment sub show --name $DEPLOYMENT_NAME --query properties.outputs.containerRegistryLoginServer.value -o tsv)
+          CONTAINER_APP_URL=$(az deployment sub show --name $DEPLOYMENT_NAME --query properties.outputs.containerAppUrl.value -o tsv)
+          
+          echo "acrName=$ACR_NAME" >> $GITHUB_OUTPUT
+          echo "acrLoginServer=$ACR_LOGIN_SERVER" >> $GITHUB_OUTPUT
+          echo "containerAppUrl=$CONTAINER_APP_URL" >> $GITHUB_OUTPUT
+
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    needs: deploy-infrastructure
+    environment: ${{ github.event.inputs.environment }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Login to Azure Container Registry
+        run: |
+          az acr login --name ${{ needs.deploy-infrastructure.outputs.acrName }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ needs.deploy-infrastructure.outputs.acrLoginServer }}/${{ env.APPLICATION_NAME }}:${{ github.sha }}
+            ${{ needs.deploy-infrastructure.outputs.acrLoginServer }}/${{ env.APPLICATION_NAME }}:latest
+          cache-from: type=registry,ref=${{ needs.deploy-infrastructure.outputs.acrLoginServer }}/${{ env.APPLICATION_NAME }}:latest
+          cache-to: type=inline
+
+      - name: Update Container App with new image
+        run: |
+          CONTAINER_APP_NAME=$(az containerapp list \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query "[0].name" -o tsv)
+          
+          az containerapp update \
+            --name $CONTAINER_APP_NAME \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --image ${{ needs.deploy-infrastructure.outputs.acrLoginServer }}/${{ env.APPLICATION_NAME }}:${{ github.sha }}
+
+      - name: Display application URL
+        run: |
+          echo "🚀 Application deployed successfully!"
+          echo "Application URL: https://${{ needs.deploy-infrastructure.outputs.containerAppUrl }}"
+          echo "Environment: ${{ github.event.inputs.environment }}"
