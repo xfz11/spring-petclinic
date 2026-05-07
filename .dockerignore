@@ -1,0 +1,36 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.idea
+*.iml
+.project
+.classpath
+.settings
+
+# Build artifacts
+target/
+build/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Documentation
+*.md
+docs/
+
+# CI/CD
+.github/
+.azure/
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Other
+.editorconfig
+.gitpod.yml
+.devcontainer/
+k8s/

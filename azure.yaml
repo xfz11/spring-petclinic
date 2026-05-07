@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/refs/heads/main/schemas/v1.0/azure.yaml.json
+
+name: spring-petclinic-aca
+metadata:
+  template: spring-petclinic-aca@0.0.1-beta
+
+services:
+  petclinic:
+    project: ./
+    language: java
+    host: containerapp
+    docker:
+      path: ./Dockerfile
+      context: ./
