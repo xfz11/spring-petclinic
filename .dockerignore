@@ -1,0 +1,46 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# CI/CD
+.github
+.azure
+
+# IDE
+.idea
+.vscode
+.devcontainer
+*.iml
+*.ipr
+*.iws
+
+# Build artifacts
+target/
+!target/*.jar
+build/
+*.log
+
+# Documentation
+*.md
+docs/
+
+# Test files
+src/test/
+
+# Maven wrapper (already in image)
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+.gradle
+gradle/
+gradlew
+gradlew.bat
+settings.gradle
+build.gradle
+
+# Misc
+*.swp
+*.swo
+*~
+.DS_Store
